@@ -24,6 +24,34 @@ write.csv(sig_DEGs, file = "sig_DEGs.csv")
 
 library(clusterProfiler)
 kegg_enrichment <- enrichKEGG(sig_DEGs$gene)
+kegg_res <- enrichKEGG(gene         = genes,
+                       organism     = 'hsa', # use 'mmu' for mouse, 'rno' for rat etc.
+                       pvalueCutoff = 0.05)
+barplot(kegg_res, showCategory=10)
 
+
+library(survival)
+library(survminer)
+data <- read.csv('data.csv')
+survival_data <- Surv(data$time, data$status)
+fit <- survfit(survival_data ~ data$group) # Replace 'group' with your group variable
+ggsurvplot(fit, data = data, risk.table = TRUE, pval = TRUE)
+
+library(fgsea)
+ranked_genes <- read.csv('ranked_genes.csv')
+gene_sets <- gmtPathways('gene_sets.gmt')
+gsea_result <- fgsea(pathways = gene_sets, stats = ranked_genes, minSize=15, maxSize=500, nperm=1000)
+head(gsea_result, 20)
+
+
+
+library(pheatmap)
+data <- as.matrix(data)
+pheatmap(data)
+
+
+library(survminer)
+fit <- survfit(Surv(data$time, data$status) ~ data$group)
+ggsurvplot(fit, data = data, risk.table = TRUE, pval = TRUE)
 
 
