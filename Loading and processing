@@ -1,0 +1,55 @@
+# Python script for extracting and pre-processing TCGA data using PyCGA library
+
+import pandas as pd
+from PyCGA import TCGA
+
+# Initialize TCGA client
+client = TCGA()
+
+# Download LUSC (lung squamous cell carcinoma) data
+luscc_data = client.download('LUSC')
+
+# Filter gene expression data 
+luscc_gene_expression = luscc_data['gene_expression']
+
+# Normalize the data
+luscc_gene_expression = luscc_gene_expression.apply(lambda x: (x - x.mean()) / x.std(), axis=0)
+
+# Save filtered data
+luscc_gene_expression.to_csv('luscc_gene_expression.csv')
+
+
+# R script for differential gene expression analysis using DESeq2 library
+library(DESeq2)
+
+# load gene expression data
+gene_expression <- read.csv('luscc_gene_expression.csv')
+
+# Create a DESeq2 dataset
+dds <- DESeqDataSetFromMatrix(countData = gene_expression,
+                              colData = coldata,
+                              design = ~ condition)
+
+# Run DESeq2 analysis
+dds <- DESeq(dds)
+
+# Obtain differentially expressed genes (DEGs)
+res <- results(dds)
+
+# Adjust for multiple testing
+res$padj <- p.adjust(res$pvalue, method = "BH")
+
+# Filter for significant DEGs
+sig_DEGs <- subset(res, padj < 0.05 & abs(log2FoldChange) > 1)
+
+# Save DEGs
+write.csv(sig_DEGs, file = "sig_DEGs.csv")
+
+# Pathway analysis
+library(clusterProfiler)
+
+# Enrich pathways using KEGG database
+kegg_enrichment <- enrichKEGG(sig_DEGs$gene)
+
+
+
