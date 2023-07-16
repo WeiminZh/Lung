@@ -9,7 +9,7 @@ luscc_gene_expression = luscc_gene_expression.apply(lambda x: (x - x.mean()) / x
 luscc_gene_expression.to_csv('luscc_gene_expression.csv') #Save for further analysis
 
 
-# R script for differential gene expression analysis using DESeq2 library
+# R script for differential gene expression analysis
 library(DESeq2)
 gene_expression <- read.csv('luscc_gene_expression.csv')
 dds <- DESeqDataSetFromMatrix(countData = gene_expression,
